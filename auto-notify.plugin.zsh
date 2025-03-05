@@ -31,8 +31,6 @@ timeformat() {
     return 1
   fi
 
-  echo -e "$@"
-
   local seconds=$1
   local days hours minutes
   local parts=()
@@ -66,6 +64,7 @@ timeformat() {
   add_unit "$minutes" "Minute" "Minutes"
   add_unit "$seconds" "Second" "Seconds"
 
+  echo -e "${parts[*]}"
   case ${#parts[@]} in
   0)
     time_str=""
