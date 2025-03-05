@@ -66,14 +66,18 @@ timeformat() {
 
   case ${#parts[@]} in
   0)
+    echo 'text here 0'
+
     time_str=""
     log-debug "'${time_str}'"
     ;;
   1)
+    echo 'text here 1'
     time_str="${parts[0]}"
     log-debug "'${time_str}'"
     ;;
   *)
+    echo 'text here *'
     all_but_last=("${parts[@]:0:${#parts[@]}-1}")
     joined_all_but_last=$(printf "%s, " "${all_but_last[@]}")
     joined_all_but_last="${joined_all_but_last%, }"
