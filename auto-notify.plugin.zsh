@@ -25,7 +25,7 @@ export AUTO_NOTIFY_VERSION="0.10.2"
     'ssh'
   )
 
-sec2time() {
+timeformat() {
   if [ $# -lt 1 ]; then
     echo "Time is required" >&2
     return 1
@@ -79,7 +79,7 @@ sec2time() {
     ;;
   esac
 
-  echo "$time_str"
+  return "$time_str"
 }
 
 function _auto_notify_format() {
@@ -94,7 +94,7 @@ function _auto_notify_format() {
 
 function _auto_notify_message() {
   local command="$1"
-  local elapsed=$(sec2time $2)
+  local elapsed=$(timeformat $2)
   local exit_code="$3"
   local platform="$(uname)"
   # Run using echo -e in order to make sure notify-send picks up new line
