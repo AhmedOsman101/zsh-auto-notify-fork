@@ -82,6 +82,10 @@ timeformat() {
   echo "$time_str"
 }
 
+log-debug $(timeformat "3600")
+log-debug $(timeformat 3600)
+exit
+
 function _auto_notify_format() {
   local MESSAGE="$1"
   local command="$2"
@@ -235,8 +239,6 @@ function enable_auto_notify() {
 
 _auto_notify_reset_tracking
 
-log-debug $(timeformat 3600)
-log-debug $(timeformat "3600")
 
 platform="$(uname)"
 if [[ "$platform" == "Linux" ]] && ! type notify-send > /dev/null; then
