@@ -79,7 +79,7 @@ timeformat() {
     ;;
   esac
 
-  echo "$time_str"
+  return "$time_str"
 }
 
 function _auto_notify_format() {
