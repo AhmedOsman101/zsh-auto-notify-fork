@@ -85,7 +85,7 @@ timeformat() {
 function _auto_notify_format() {
   local MESSAGE="$1"
   local command="$2"
-  local elapsed="$3"
+  local elapsed="$(timeformat "$2")"
   local exit_code="$4"
   MESSAGE="${MESSAGE//\%command/$command}"
   MESSAGE="${MESSAGE//\%elapsed/$elapsed}"
@@ -94,7 +94,7 @@ function _auto_notify_format() {
 
 function _auto_notify_message() {
   local command="$1"
-  local elapsed=$(timeformat $2)
+  local elapsed="$2"
   local exit_code="$3"
   local platform="$(uname)"
   # Run using echo -e in order to make sure notify-send picks up new line
