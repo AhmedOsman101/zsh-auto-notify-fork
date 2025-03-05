@@ -25,6 +25,63 @@ export AUTO_NOTIFY_VERSION="0.10.2"
     'ssh'
   )
 
+sec2time() {
+  if [ $# -lt 1 ]; then
+    echo "Time is required" >&2
+    return 1
+  fi
+
+  local seconds=$1
+  local days hours minutes
+  local parts=()
+  local time_str
+
+  days=$((seconds / 86400))
+  seconds=$((seconds % 86400))
+
+  hours=$((seconds / 3600))
+  seconds=$((seconds % 3600))
+
+  minutes=$((seconds / 60))
+  seconds=$((seconds % 60))
+
+  add_unit() {
+    local value=$1
+    local singular=$2
+    local plural=$3
+
+    if [ "$value" -gt 0 ]; then
+      if [ "$value" -eq 1 ]; then
+        parts+=("$value $singular")
+      else
+        parts+=("$value $plural")
+      fi
+    fi
+  }
+
+  add_unit "$days" "Day" "Days"
+  add_unit "$hours" "Hour" "Hours"
+  add_unit "$minutes" "Minute" "Minutes"
+  add_unit "$seconds" "Second" "Seconds"
+
+  case ${#parts[@]} in
+  0)
+    time_str=""
+    ;;
+  1)
+    time_str="${parts[0]}"
+    ;;
+  *)
+    all_but_last=("${parts[@]:0:${#parts[@]}-1}")
+    joined_all_but_last=$(printf "%s, " "${all_but_last[@]}")
+    joined_all_but_last="${joined_all_but_last%, }"
+    time_str="$joined_all_but_last and ${parts[-1]}"
+    ;;
+  esac
+
+  echo "$time_str"
+}
+
 function _auto_notify_format() {
   local MESSAGE="$1"
   local command="$2"
