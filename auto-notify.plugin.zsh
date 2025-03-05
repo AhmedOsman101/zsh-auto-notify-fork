@@ -89,8 +89,7 @@ function _auto_notify_format() {
   local exit_code="$4"
   MESSAGE="${MESSAGE//\%command/$command}"
   MESSAGE="${MESSAGE//\%elapsed/$elapsed}"
-  # printf "%s" "$MESSAGE"
-  echo "$elapsed" && exit
+  printf "%s" "$MESSAGE"
 }
 
 function _auto_notify_message() {
@@ -236,6 +235,8 @@ function enable_auto_notify() {
 
 _auto_notify_reset_tracking
 
+timeformat 3600
+timeformat "3600"
 
 platform="$(uname)"
 if [[ "$platform" == "Linux" ]] && ! type notify-send > /dev/null; then
