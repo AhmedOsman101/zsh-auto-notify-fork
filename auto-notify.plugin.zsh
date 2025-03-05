@@ -92,7 +92,7 @@ timeformat() {
     # log-debug "'${time_str}'"
     ;;
   1)
-    # echo 'text here 1'
+    echo 'text here 1'
     # log-debug "${parts[0]}"
     # log-debug "${parts[*]}"
     time_str="${parts[0]}"
