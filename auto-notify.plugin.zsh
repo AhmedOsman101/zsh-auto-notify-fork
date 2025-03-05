@@ -59,32 +59,32 @@ timeformat() {
     fi
   }
 
-  # Scenario 1: Empty array
-  log-debug "${parts[0]}"  # [DEBUG]:
-  log-debug "${parts[*]}"  # [DEBUG]:
+  # # Scenario 1: Empty array
+  # log-debug "${parts[0]}"  # [DEBUG]:
+  # log-debug "${parts[*]}"  # [DEBUG]:
 
-  # Scenario 2: Single element at index 0
-  parts=("1 Hour")
-  log-debug "${parts[0]}"  # [DEBUG]: 1 Hour
-  log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
+  # # Scenario 2: Single element at index 0
+  # parts=("1 Hour")
+  # log-debug "${parts[0]}"  # [DEBUG]: 1 Hour
+  # log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
 
-  # Scenario 3: Sparse array, index 1 set, index 0 unset
-  unset parts
-  parts[1]="1 Hour"
-  log-debug "${parts[0]}"  # [DEBUG]:
-  log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
+  # # Scenario 3: Sparse array, index 1 set, index 0 unset
+  # unset parts
+  # parts[1]="1 Hour"
+  # log-debug "${parts[0]}"  # [DEBUG]:
+  # log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
 
-  # Scenario 4: Two elements
-  parts=("1" "Hour")
-  log-debug "${parts[0]}"  # [DEBUG]: 1
-  log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
+  # # Scenario 4: Two elements
+  # parts=("1" "Hour")
+  # log-debug "${parts[0]}"  # [DEBUG]: 1
+  # log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
 
   add_unit "$days" "Day" "Days"
   add_unit "$hours" "Hour" "Hours"
   add_unit "$minutes" "Minute" "Minutes"
   add_unit "$seconds" "Second" "Seconds"
 
-  case ${#parts[@]} in
+  case ${#parts[*]} in
   0)
     echo 'text here 0'
 
