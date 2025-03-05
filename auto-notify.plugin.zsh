@@ -73,6 +73,7 @@ timeformat() {
     ;;
   1)
     echo 'text here 1'
+    log-debug "${parts[0]}"
     time_str="${parts[0]}"
     log-debug "'${time_str}'"
     ;;
