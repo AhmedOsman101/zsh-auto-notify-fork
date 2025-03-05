@@ -84,7 +84,6 @@ timeformat() {
 
 log-debug $(timeformat "3600")
 log-debug $(timeformat 3600)
-exit
 
 function _auto_notify_format() {
   local MESSAGE="$1"
