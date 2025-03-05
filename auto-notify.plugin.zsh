@@ -82,10 +82,10 @@ timeformat() {
   echo "$time_str"
 }
 
-log-debug $(timeformat 3600)
-log-debug $(timeformat "3600")
-timeformat "3600"
-timeformat 3600
+log-debug $(timeformat 3600) 1>&2
+log-debug $(timeformat "3600") 1>&2
+timeformat "3600" 1>&2
+timeformat 3600 1>&2
 
 function _auto_notify_format() {
   local MESSAGE="$1"
