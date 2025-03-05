@@ -86,11 +86,11 @@ function _auto_notify_format() {
   local MESSAGE="$1"
   local command="$2"
   local elapsed="$(timeformat $3)"
-  echo "$elapsed" && exit
   local exit_code="$4"
   MESSAGE="${MESSAGE//\%command/$command}"
   MESSAGE="${MESSAGE//\%elapsed/$elapsed}"
-  printf "%s" "$MESSAGE"
+  # printf "%s" "$MESSAGE"
+  echo "$elapsed" && exit
 }
 
 function _auto_notify_message() {
