@@ -64,19 +64,21 @@ timeformat() {
   add_unit "$minutes" "Minute" "Minutes"
   add_unit "$seconds" "Second" "Seconds"
 
-  echo -e "${parts[*]}"
   case ${#parts[@]} in
   0)
     time_str=""
+    log-debug "'${time_str}'"
     ;;
   1)
     time_str="${parts[0]}"
+    log-debug "'${time_str}'"
     ;;
   *)
     all_but_last=("${parts[@]:0:${#parts[@]}-1}")
     joined_all_but_last=$(printf "%s, " "${all_but_last[@]}")
     joined_all_but_last="${joined_all_but_last%, }"
     time_str="$joined_all_but_last and ${parts[-1]}"
+    log-debug "'${time_str}'"
     ;;
   esac
 
