@@ -85,7 +85,7 @@ timeformat() {
 function _auto_notify_format() {
   local MESSAGE="$1"
   local command="$2"
-  local elapsed="$(timeformat $2)"
+  local elapsed="$(timeformat $3)"
   local exit_code="$4"
   MESSAGE="${MESSAGE//\%command/$command}"
   MESSAGE="${MESSAGE//\%elapsed/$elapsed}"
