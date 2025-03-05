@@ -98,7 +98,7 @@ timeformat() {
     # log-debug "${parts[*]} *"
     # log-debug "${parts[@]} @"
     time_str="${parts[@]:0}"
-    log-debug "'${time_str}'"
+    # log-debug "'${time_str}'"
     ;;
   *)
     echo 'text here *'
@@ -115,8 +115,8 @@ timeformat() {
 
 # log-debug $(timeformat 3600) 1>&2
 # log-debug $(timeformat "3600") 1>&2
-timeformat "3600"
-# timeformat 3600
+timeformat "31626060"
+timeformat 31638181
 
 function _auto_notify_format() {
   local MESSAGE="$1"
