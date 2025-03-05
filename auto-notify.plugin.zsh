@@ -59,6 +59,26 @@ timeformat() {
     fi
   }
 
+  # Scenario 1: Empty array
+  log-debug "${parts[0]}"  # [DEBUG]:
+  log-debug "${parts[*]}"  # [DEBUG]:
+
+  # Scenario 2: Single element at index 0
+  parts=("1 Hour")
+  log-debug "${parts[0]}"  # [DEBUG]: 1 Hour
+  log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
+
+  # Scenario 3: Sparse array, index 1 set, index 0 unset
+  unset parts
+  parts[1]="1 Hour"
+  log-debug "${parts[0]}"  # [DEBUG]:
+  log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
+
+  # Scenario 4: Two elements
+  parts=("1" "Hour")
+  log-debug "${parts[0]}"  # [DEBUG]: 1
+  log-debug "${parts[*]}"  # [DEBUG]: 1 Hour
+
   add_unit "$days" "Day" "Days"
   add_unit "$hours" "Hour" "Hours"
   add_unit "$minutes" "Minute" "Minutes"
@@ -69,14 +89,14 @@ timeformat() {
     echo 'text here 0'
 
     time_str=""
-    log-debug "'${time_str}'"
+    # log-debug "'${time_str}'"
     ;;
   1)
-    echo 'text here 1'
-    log-debug "${parts[0]}"
-    log-debug "${parts[*]}"
+    # echo 'text here 1'
+    # log-debug "${parts[0]}"
+    # log-debug "${parts[*]}"
     time_str="${parts[0]}"
-    log-debug "'${time_str}'"
+    # log-debug "'${time_str}'"
     ;;
   *)
     echo 'text here *'
@@ -84,7 +104,7 @@ timeformat() {
     joined_all_but_last=$(printf "%s, " "${all_but_last[@]}")
     joined_all_but_last="${joined_all_but_last%, }"
     time_str="$joined_all_but_last and ${parts[-1]}"
-    log-debug "'${time_str}'"
+    # log-debug "'${time_str}'"
     ;;
   esac
 
@@ -93,7 +113,7 @@ timeformat() {
 
 # log-debug $(timeformat 3600) 1>&2
 # log-debug $(timeformat "3600") 1>&2
-timeformat "3600"
+# timeformat "3600"
 timeformat 3600
 
 function _auto_notify_format() {
