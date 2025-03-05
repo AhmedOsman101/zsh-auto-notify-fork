@@ -26,10 +26,12 @@ export AUTO_NOTIFY_VERSION="0.10.2"
   )
 
 timeformat() {
-  # if [ $# -lt 1 ]; then
-  #   echo "Time is required" >&2
-  #   return 1
-  # fi
+  if [ $# -lt 1 ]; then
+    echo "Time is required" >&2
+    return 1
+  fi
+
+  echo -e "$@"
 
   local seconds=$1
   local days hours minutes
