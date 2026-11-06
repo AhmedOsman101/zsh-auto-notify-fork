@@ -1,11 +1,21 @@
-export AUTO_NOTIFY_VERSION="0.10.2"
+export AUTO_NOTIFY_VERSION="0.11.1"
 
 # Time it takes for a notification to expire
 [[ -z "${AUTO_NOTIFY_EXPIRE_TIME}" ]] &&
   export AUTO_NOTIFY_EXPIRE_TIME=8000
 # Threshold in seconds for when to automatically show a notification
-[[ -z "${AUTO_NOTIFY_THRESHOLD}" ]] &&
-  export AUTO_NOTIFY_THRESHOLD=10
+[[ -z "$AUTO_NOTIFY_THRESHOLD" ]] &&
+    export AUTO_NOTIFY_THRESHOLD=10
+# Enable or disable notifications for SSH sessions (0 = disabled, 1 = enabled)
+[[ -z "$AUTO_NOTIFY_ENABLE_SSH" ]] &&
+    export AUTO_NOTIFY_ENABLE_SSH=0
+# Enable transient notifications to prevent them from being saved in the notification history
+[[ -z "$AUTO_NOTIFY_ENABLE_TRANSIENT" ]] &&
+    export AUTO_NOTIFY_ENABLE_TRANSIENT=1
+# Configure whether notifications should be canceled when receiving a SIGINT (Ctrl+C)
+[[ -z "$AUTO_NOTIFY_CANCEL_ON_SIGINT" ]] &&
+    export AUTO_NOTIFY_CANCEL_ON_SIGINT=0
+
 
 # List of commands/programs to ignore sending notifications for
 [[ -z "${AUTO_NOTIFY_IGNORE}" ]] &&
@@ -106,23 +116,66 @@ function _auto_notify_message() {
   local DEFAULT_TITLE="\"%command\" Completed"
   local DEFAULT_BODY="$(echo -e "Total time: %elapsed")"
 
-  local title="${AUTO_NOTIFY_TITLE:-${DEFAULT_TITLE}}"
-  local text="${AUTO_NOTIFY_BODY:-${DEFAULT_BODY}}"
+    # Exit code 130 indicates termination by SIGINT (Ctrl+C).
+    # If AUTO_NOTIFY_CANCEL_ON_SIGINT is enabled, suppress the notification.
+    if [[ "$exit_code" -eq 130 ]] && [[ "${AUTO_NOTIFY_CANCEL_ON_SIGINT}" -eq 1 ]]; then
+        return
+    fi
+
+    local title="${AUTO_NOTIFY_TITLE:-$DEFAULT_TITLE}"
+    local text="${AUTO_NOTIFY_BODY:-$DEFAULT_BODY}"
 
   title="$(_auto_notify_format "${title}" "${command}" "${elapsed}" "${exit_code}")"
   body="$(_auto_notify_format "${text}" "${command}" "${elapsed}")"
 
-  if [[ "${platform}" == "Linux" ]]; then
-    local urgency="normal"
-    local transient="--hint=int:transient:1"
-    local icon=${AUTO_NOTIFY_ICON_SUCCESS:-""}
-    # Exit code 130 is returned when a process is terminated with SIGINT.
-    # Since the user is already interacting with the program, there is no
-    # need to make the notification persistent.
-    if [[ "${exit_code}" != "0" ]] && [[ "${exit_code}" != "130" ]]; then
-      urgency="critical"
-      transient=""
-      icon=${AUTO_NOTIFY_ICON_FAILURE:-""}
+    if [[ "$platform" == "Linux" ]]; then
+        # Set default notification properties
+        local urgency="normal"
+        local transient="--hint=int:transient:$AUTO_NOTIFY_ENABLE_TRANSIENT"
+        local icon="${AUTO_NOTIFY_ICON_SUCCESS:-""}"
+
+        # Handle specific exit codes
+        if [[ "$exit_code" -eq 130 ]]; then
+            urgency="critical"
+            transient="--hint=int:transient:1"
+            icon="${AUTO_NOTIFY_ICON_FAILURE:-""}"
+        elif [[ "$exit_code" -ne 0 ]]; then
+            # For all other non-zero exit codes, mark the notification as critical.
+            urgency="critical"
+            icon="${AUTO_NOTIFY_ICON_FAILURE:-""}"
+        fi
+
+        local arguments=("$title" "$body" "--app-name=zsh" "$transient" "--urgency=$urgency" "--expire-time=$AUTO_NOTIFY_EXPIRE_TIME")
+
+        if [[ -n "$icon" ]]; then
+                arguments+=("--icon=$icon")
+        fi
+
+        # Check if the script is running over SSH
+        if [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]; then
+            # Extract the client IP address from environment
+            local client_ip="${SSH_CLIENT%% *}"
+            [[ -z "$client_ip" ]] && client_ip="${SSH_CONNECTION%% *}"
+
+            # Forward the notify-send command to the client machine via SSH
+            ssh "${USER}@${client_ip}" "$(printf '%q ' notify-send "${arguments[@]}")"
+        else
+            # If not running over SSH, send notification locally
+            notify-send "${arguments[@]}"
+        fi
+
+    elif [[ "$platform" == "Darwin" ]]; then
+        osascript \
+          -e 'on run argv' \
+          -e 'display notification (item 1 of argv) with title (item 2 of argv)' \
+          -e 'end run' \
+          "$body" "$title" \
+          2> >(grep -Ev 'ApplePersistence=(NO|YES)' >&2)
+          # ^ osascript outputs "ApplePersistence=NO" to stderr on every run, which clutters the terminal.
+          # ^ Filter stderr to remove only this message while preserving any legitimate error messages.
+    else
+        printf "Unknown platform for sending notifications: $platform\n"
+        printf "Please post an issue on gitub.com/MichaelAquilina/zsh-auto-notify/issues/\n"
     fi
 
     local arguments=("${title}" "${body}" "--app-name=zsh" "${transient}" "--urgency=${urgency}" "--expire-time=${AUTO_NOTIFY_EXPIRE_TIME}")
@@ -152,33 +205,8 @@ function _is_auto_notify_ignored() {
   # Remove leading whitespace
   target_command="$(echo "${target_command}" | sed -e 's/^ *//')"
 
-  # If the command is being run over SSH, then ignore it
-  if [[ -n ${SSH_CLIENT-} || -n ${SSH_TTY-} || -n ${SSH_CONNECTION-} ]]; then
-    print "yes"
-    return
-  fi
-
-  # Remove sudo prefix from command if detected
-  if [[ "${target_command}" == "sudo "* ]]; then
-    target_command="${target_command/sudo /}"
-  fi
-
-  # If AUTO_NOTIFY_WHITELIST is defined, then auto-notify will ignore
-  # any item not defined in the white list
-  # Otherwise - the alternative (default) approach is used where the
-  # AUTO_NOTIFY_IGNORE blacklist is used to ignore commands
-
-  if [[ -n "${AUTO_NOTIFY_WHITELIST}" ]]; then
-    for allowed in ${AUTO_NOTIFY_WHITELIST}; do
-      if [[ "${target_command}" == "${allowed}"* ]]; then
-        print "no"
-        return
-      fi
-    done
-    print "yes"
-  else
-    for ignore in ${AUTO_NOTIFY_IGNORE}; do
-      if [[ "${target_command}" == "${ignore}"* ]]; then
+    # Ignore the command if running over SSH and AUTO_NOTIFY_ENABLE_SSH is disabled
+    if [[ -n ${SSH_CLIENT-} || -n ${SSH_TTY-} || -n ${SSH_CONNECTION-} ]] && [[ "${AUTO_NOTIFY_ENABLE_SSH-1}" == "0" ]]; then
         print "yes"
         return
       fi
